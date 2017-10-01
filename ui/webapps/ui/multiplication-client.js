@@ -11,18 +11,24 @@ function updateMultiplication() {
     });
 }
 
-function updateStats(alias) {
+function updateResults(alias) {
+    var userId = -1;
     $.ajax({
+        async: false,
         url: "http://localhost:8080/results?alias=" + alias,
-    }).then(function(data) {
-        $('#stats-body').empty();
-        data.forEach(function(row) {
-            $('#stats-body').append('<tr><td>' + row.id + '</td>' +
-                '<td>' + row.multiplication.factorA + ' x ' + row.multiplication.factorB + '</td>' +
-                '<td>' + row.resultAttempt + '</td>' +
-                '<td>' + (row.correct === true ? 'YES' : 'NO') + '</td></tr>');
-        });
+        success: function(data) {
+            $('#results-div').show();
+            $('#results-body').empty();
+            data.forEach(function(row) {
+                $('#results-body').append('<tr><td>' + row.id + '</td>' +
+                    '<td>' + row.multiplication.factorA + ' x ' + row.multiplication.factorB + '</td>' +
+                    '<td>' + row.resultAttempt + '</td>' +
+                    '<td>' + (row.correct === true ? 'YES' : 'NO') + '</td></tr>');
+            });
+            userId = data[0].user.id;
+        }
     });
+    return userId;
 }
 
 $(document).ready(function() {
@@ -65,6 +71,10 @@ $(document).ready(function() {
 
         updateMultiplication();
 
-        updateStats(userAlias);
+        setTimeout(function(){
+            var userId = updateResults(userAlias);
+            updateStats(userId);
+            updateLeaderBoard();
+        }, 300);
     });
 });
